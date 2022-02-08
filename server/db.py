@@ -20,7 +20,10 @@ class Owner(db.Entity):
     vat = orm.Optional(str, unique=True, index='vat_index')
 
     address = orm.Required(str)
-    
+
+    contracts = orm.Set('Contract', reverse='owner')
+
+
 
 class Contract(db.Entity):
     _table_ = 'contracts'
@@ -31,8 +34,10 @@ class Contract(db.Entity):
 
     address = orm.Required(str)
 
-    owner = orm.Required(Owner)
-    
+    owner = orm.Required('Owner', cascade_delete=False, reverse='contracts')
+
+    invoices = orm.Set('Invoice', reverse='contract')
+
     portal = orm.Optional(str)
 
 
@@ -41,9 +46,14 @@ class Invoice(db.Entity):
 
     id = orm.PrimaryKey(int, auto=True)
 
-    contract = orm.Required(Contract)
+    contract = orm.Required('Contract', cascade_delete=False, reverse='invoices')
 
-    owner = orm.Required(Owner)
+    total = orm.Required(int)
+
+    desc = orm.Required(str)
+
+    other_info = orm.Optional(str)
+
 
 
 CONTRACTS = [

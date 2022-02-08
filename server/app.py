@@ -1,12 +1,19 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from pony import orm
-from .db import db
+from db import db
 
 
-def build_app(args):
+def build_app(args=None):
     try:
-        db.bind()
+        db.bind({
+            'provider': 'postgres',
+            'host': 'localhost',
+            'port': 5432,
+            'database': '',
+            'user': '',
+            'password': ''
+        })
         db.generate_mapping(create_tables=True)
 
     except Exception as e:
