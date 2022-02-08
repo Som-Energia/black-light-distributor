@@ -3,79 +3,56 @@ import uuid
 from pony import orm
 
 
-db = orm.Database()
+class Database:
 
+    def __init__(self):
+        self.db = orm.Database()
 
-class Owner(db.Entity):
-    _table_ = 'owners'
+    def define_models(self):
 
-    id = orm.PrimaryKey(int, auto=True)
+        class Owner(self.db.Entity):
+            _table_ = 'owners'
 
-    name = orm.Required(str)
+            id = orm.PrimaryKey(int, auto=True)
 
-    surname1 = orm.Required(str)
+            name = orm.Required(str)
 
-    surname2 = orm.Optional(str)
+            surname1 = orm.Required(str)
 
-    vat = orm.Optional(str, unique=True, index='vat_index')
+            surname2 = orm.Optional(str)
 
-    address = orm.Required(str)
+            vat = orm.Optional(str, unique=True, index='vat_index')
 
-    contracts = orm.Set('Contract', reverse='owner')
+            address = orm.Required(str)
 
+            contracts = orm.Set('Contract')
 
+            invoices = orm.Set('Invoice')
 
-class Contract(db.Entity):
-    _table_ = 'contracts'
+        class Contract(self.db.Entity):
+            _table_ = 'contracts'
 
-    id = orm.PrimaryKey(int, auto=True)
+            id = orm.PrimaryKey(int, auto=True)
 
-    cups = orm.Required(str, unique=True)
+            cups = orm.Required(str, unique=True)
 
-    address = orm.Required(str)
+            address = orm.Required(str)
 
-    owner = orm.Required('Owner', cascade_delete=False, reverse='contracts')
+            owner = orm.Required(Owner, cascade_delete=False)
 
-    invoices = orm.Set('Invoice', reverse='contract')
+            invoices = orm.Set('Invoice')
 
-    portal = orm.Optional(str)
+        class Invoice(self.db.Entity):
+            _table = 'invoices'
 
+            id = orm.PrimaryKey(int, auto=True)
 
-class Invoice(db.Entity):
-    _table = 'invoices'
+            contract = orm.Required(Contract, cascade_delete=False)
 
-    id = orm.PrimaryKey(int, auto=True)
+            owner = orm.Required(Owner, cascade_delete=False)
 
-    contract = orm.Required('Contract', cascade_delete=False, reverse='invoices')
+            total = orm.Required(int)
 
-    total = orm.Required(int)
+            desc = orm.Required(str)
 
-    desc = orm.Required(str)
-
-    other_info = orm.Optional(str)
-
-
-
-CONTRACTS = [
-    {
-        'id': uuid.uuid4().hex,
-        'cups': 'ES0363315453020214VA',
-        'address': 'Praza León, 334, 6º D (89276) Salgado del Vallès',
-        'owner': 'Jack Kerouac',
-        'active': True
-    },
-    {
-        'id': uuid.uuid4().hex,
-        'cups': 'ES0029968486145694XL',
-        'address': 'Paseo Iker, 6, Ático 7º (41140) Los Quesada',
-        'owner': 'J. K. Rowling',
-        'active': True
-    },
-    {
-        'id': uuid.uuid4().hex,
-        'cups': 'ES0023784943500247ZH',
-        'address': 'Ronda Javier, 08, 6º A (64874) Vall González',
-        'owner': 'Dr. Seuss',
-        'active': True
-    }
-]
+            other_info = orm.Optional(str)
